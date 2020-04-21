@@ -13,6 +13,8 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from flask_migrate import Migrate
 from forms import *
+#import datetime
+
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -27,6 +29,10 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
+venue_artist = db.Table('venue_artist',
+    db.Column('Venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
+    db.Column('Artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
+)
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -39,8 +45,12 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    artists = db.relationship('Artist', secondary=venue_artist,
+      backref=db.backref('venues', lazy=True))
+    
+    def __repr__(self):
+      return f'<Venue {self.id}>  {self.name}' 
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -53,10 +63,23 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    shows = db.relationship('Show', backref='artist', lazy=True)
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    def __repr__(self):
+      return f'<Artist {self.id}>  {self.name}' 
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+class Show(db.Model):
+    __tablename__ = 'Show'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    date = db.Column(db.DateTime)
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
+
+
+    def __repr__(self):
+      return f'<show {self.id}>  {self.name}' 
+
 
 #----------------------------------------------------------------------------#
 # Filters.
